@@ -7,6 +7,8 @@
  #include <queue>
  #include <stack>
  #include <limits.h>
+ #include <string>
+ #include<map>
  using namespace std;
 
 
@@ -34,17 +36,17 @@
 
 				void ScanGraph()
 				{
-					for (int i = 0; i<matr.size(); i++)
-						for (int j = 0; j<matr.size(); j++)
+					for (int i = 0; i < matr.size(); i++)
+						for (int j = 0; j < matr.size(); j++)
 						 	cin >> matr[i][j];
 				}
 				
 
 				void PrintGraph() const
 				{
-					for (int i = 0; i<matr.size(); i++)
+					for (int i = 0; i < matr.size(); i++)
 					{
-						for (int j = 0; j<matr.size(); j++)
+						for (int j = 0; j < matr.size(); j++)
 							cout << matr[i][j] << " ";
 						cout << "\n";
 					}
@@ -64,6 +66,14 @@
 				int GetRib(int a, int b) const
 				{
 					return(matr[a][b]);
+				}
+
+				void AddRib()
+				{
+					vector<int> q(matr.size(), 0);
+					matr.push_back(q);
+					for (int i = 0; i < matr.size(); i++)
+						matr[i].push_back(0);
 				}
 					
 				Graph Trans() const
@@ -160,10 +170,132 @@
 					return(DFS(start)[finish]);
 				}
 
+/*				vector<int> Kosaraju()
+				{
 					
+				}
+				bool Sat2(string &str)
+				{
+					vector<char> let;
+					for (int i = 0; i < str.length; i++)
+					{
+
+					}
+				}
+*/
+				vector<int> findComp(int top)
+				{
+					Graph rev(this->Trans());
+					vector<int> comp;
+					vector<int> temp1= this->DFS(top);
+					vector<int> temp2 = rev.DFS(top);
+					for (int i = 0; i < this->matr.size();i++)
+					if ((temp1[i] != -1) && (temp2[i] != -1))
+						comp.push_back(i);
+					return(comp);
+
+				}
+
+				vector<vector<int>> Components()
+				{
+					vector<vector<int>> compCon;
+					vector<int> ifBeen;
+					for (int i = 0; i < this->matr.size(); i++)
+						ifBeen.push_back(i);
+					while (ifBeen.size() != 0)
+					{
+						vector<int> temp=findComp(ifBeen[0]);
+						for (int i = 0; i < temp.size();i++)
+						for (int j = 0; j < ifBeen.size();j++)
+						if (temp[i] == ifBeen[j])
+						{
+							for (int k = j; k < ifBeen.size() - 1; k++)
+								ifBeen[k] = ifBeen[k + 1];
+							ifBeen.pop_back();
+						}
+						compCon.push_back(temp);
+					}
+
+					return(compCon);
+				}
 
 };
 
+
+
+int TwoSat(string ourStr)
+{
+	Graph relations;
+	map<char, int> symbNum;
+	int numLast=0;
+	int co = 0;
+	while(co < ourStr.length()-2)
+	{
+		while ((ourStr[co] < 'a') || (ourStr[co] > 'z'))
+			co++;
+		int dis1 = co;
+		co++;
+		while ((ourStr[co] < 'a') || (ourStr[co] > 'z'))
+			co++;
+		int dis2 = co;
+		co++;
+		{
+			char q = ourStr[dis1];
+			if (symbNum.find(q) == symbNum.end())
+			{
+				symbNum[q] = numLast;
+				relations.AddRib();
+				relations.AddRib();
+				numLast += 2;
+			}
+			q = ourStr[dis2];
+			if (symbNum.find(q) == symbNum.end())
+			{
+				symbNum[q] = numLast;
+				relations.AddRib();
+				relations.AddRib();
+				numLast += 2;
+			}
+			
+			if (ourStr[dis2 - 1] == '!')
+			if (ourStr[dis1 - 1] == '!') 
+			{
+				relations.SetRib(symbNum[ourStr[dis2]]+1, symbNum[ourStr[dis1]], 1);
+				relations.SetRib(symbNum[ourStr[dis1]]+1, symbNum[ourStr[dis2]], 1);
+			}
+			else
+			{
+				relations.SetRib(symbNum[ourStr[dis2]]+1, symbNum[ourStr[dis1]]+1, 1);
+				relations.SetRib(symbNum[ourStr[dis1]], symbNum[ourStr[dis2]], 1);
+			}
+			else
+			if (ourStr[dis1 - 1] == '!')
+			{
+				relations.SetRib(symbNum[ourStr[dis2]], symbNum[ourStr[dis1]], 1);
+				relations.SetRib(symbNum[ourStr[dis1]]+1, symbNum[ourStr[dis2]]+1, 1);
+			}
+			else
+			{
+				relations.SetRib(symbNum[ourStr[dis2]], symbNum[ourStr[dis1]] + 1, 1);
+				relations.SetRib(symbNum[ourStr[dis1]], symbNum[ourStr[dis2]] + 1, 1);
+			}
+			
+		}
+
+	}
+
+	vector<vector<int>> comp = relations.Components();
+	int result = 1;
+	for (int i = 0; i < comp.size(); i++)
+		sort(comp[i].begin(), comp[i].end());
+	for (int i = 0; i < comp.size(); i++)
+	for (int j = 0; j < comp[i].size()-1 ; j++)
+	if ((comp[i][j] == comp[i][j + 1] - 1) && (comp[i][j] / 2 == comp[i][j + 1] / 2))
+		result = 0;
+
+	return(result);
+
+}
 
  int main()
  {
@@ -189,12 +321,13 @@
 	 else
 	 fprintf(output, "%d", g);*/
 	 
-	 int st, fin;
-	 Graph s(5);
-	 scanf("%d%d", &st, &fin);
-	 s.ScanGraph();
-	 printf("%d", s.Dijkstra(st-1, fin-1));
-
+	 string a;
+	 getline(std::cin, a);
+	 int i=TwoSat(a);
+	 if (i)
+		 cout << "YES";
+	 else
+		 cout << "NO";
 	 return(0);
 
  };
