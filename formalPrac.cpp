@@ -3,8 +3,10 @@
   Проверить, содержит ли язык данное слово.
 
   Правка 1: Программа не проходит тесты, содержащие вложенные "*". Будет исправлено в следующих версиях.
+  Правка 2: Налажена работа с вложенными "*", появились проблемы с чтением первого символа.
+  Правка 3: Программа работает корректно с первым символом и сложными конструкциями циклов и вариаций. Время работы остаётся
+  экспоненциальным(относительно количества "*" в выражении). 
 */
-
 
 
 #include <iostream>
@@ -59,7 +61,7 @@ vector<vector<string>> ParseSmart(string regularExp)
 			ourStack.push_back(ti);
 		}
 
-		if ((regularExp[i] == '.') && ((regularExp[i - 1] > 'a') && (regularExp[i - 1] < 'z')))
+		if ((regularExp[i] == '.') && ((regularExp[i - 1] >= 'a') && (regularExp[i - 1] <= 'z')) && ((regularExp[i - 2] >= 'a') && (regularExp[i - 2] <= 'z')))
 		{
 			for (int j = 0; j < ourStack[ourStack.size()-1].size(); j++)
 				ourStack[ourStack.size() - 2][j] += ourStack[ourStack.size() - 1][j];
@@ -67,12 +69,25 @@ vector<vector<string>> ParseSmart(string regularExp)
 		}
 		if (regularExp[i] == '+')
 		{
-			ourStack[ourStack.size() - 2].push_back(ourStack[ourStack.size() - 1][0]);
+			for (int i = 0; i < ourStack[ourStack.size() - 1].size();i++)
+			ourStack[ourStack.size() - 2].push_back(ourStack[ourStack.size() - 1][i]);
 			ourStack.pop_back();
 		}
 		if (regularExp[i] == '*')
 		{
-			ourStack[ourStack.size() - 1].push_back("YOUCANSKIPIT");
+			int q = 1;
+			ourStack[ourStack.size() - q].push_back("YOUCANSKIPIT");
+			string a = "0";
+			a[0] = '0' + q;
+			ourStack[ourStack.size() - q].push_back(a);
+			for (int hm = i - 1; regularExp[hm] == '.'; hm--)
+			{
+				q++;
+				ourStack[ourStack.size() - q].push_back("YOUCANSKIPIT");
+				string a = "0";
+				a[0] = '0' + q;
+				ourStack[ourStack.size() - q].push_back(a);
+			}
 		}
 		
 	}
@@ -81,29 +96,40 @@ vector<vector<string>> ParseSmart(string regularExp)
 
 int JustDoIt(vector<vector<string>>& ourStack, string ourWord, int stackPos, int wordPos)
 {
-	if ((stackPos > ourStack.size()-1) || (wordPos > ourWord.length() - 1))
+	if ((stackPos > ourStack.size()-1) || (wordPos > ourWord.length()))
 		return(0);
-	if ((stackPos == ourStack.size()-1) && (wordPos == ourWord.length() - 1))
+	if ((stackPos == ourStack.size()-1) && (wordPos == ourWord.length()))
 		return(1);
 	
 	int ifAns = 0;
 	int ifstar = 0;
-	if (ourStack[stackPos][ourStack[stackPos].size()-1] == "YOUCANSKIPIT")
+	if ((ourStack[stackPos].size()>2)&&(ourStack[stackPos][ourStack[stackPos].size() - 2] == "YOUCANSKIPIT"))
 		ifstar = 1;
-	if (ifstar == 1)
-		ifAns += JustDoIt(ourStack, ourWord, stackPos+1, wordPos);
-	for (int i = 0; i < ourStack[stackPos].size()-1; i++)
+	for (int i = 0; i < ourStack[stackPos].size(); i++)
 	{
-		
-		int co = 0;
-		for (int j = 0; j < ourStack[stackPos][i].length();j++)
-		if (ourStack[stackPos][i][j] != ourWord[wordPos + j])
-			co = 1;
-		if (co == 0)
+		if (ourStack[stackPos][i] == "YOUCANSKIPIT")
 		{
-			ifAns+=JustDoIt(ourStack, ourWord, stackPos + 1, wordPos + ourStack[stackPos][i].length());
-			if (ifstar==1)
-				ifAns += JustDoIt(ourStack, ourWord, stackPos, wordPos + ourStack[stackPos][i].length());
+			ifAns += JustDoIt(ourStack, ourWord, stackPos + (ourStack[stackPos][i + 1][0] - '0'), wordPos);
+			cout << ourStack[stackPos][i + 1][0] - '0';
+		}
+		else
+		{
+
+			int co = 0;
+			int j = 0;
+			if (ourStack[stackPos][i].length() <= ourWord.length() - wordPos)
+			while (j < ourStack[stackPos][i].length())
+			{
+				if (ourStack[stackPos][i][j] != ourWord[wordPos + j])
+					co = 1;
+				j++;
+			}
+			if (co == 0)
+			{
+				ifAns += JustDoIt(ourStack, ourWord, stackPos + 1, wordPos + ourStack[stackPos][i].length());
+				if (ifstar == 1)
+					ifAns += JustDoIt(ourStack, ourWord, stackPos, wordPos + ourStack[stackPos][i].length());
+			}
 		}
 	}
 	if (ifAns>0)
@@ -123,6 +149,14 @@ int main()
 		cout << "YES";
 	else
 		cout << "NO";
-	return(0);
+/*	for (int i = 0; i < ourStack.size(); i++)
+	{
+		cout << '\n';
+		for (int j = 0; j < ourStack[i].size(); j++)
+			cout << ourStack[i][j] << ' ';
+		
+	}
+*/
+		return(0);
 
 }
