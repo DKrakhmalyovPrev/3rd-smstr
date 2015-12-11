@@ -56,7 +56,7 @@ vector<vector<string>> ParseSmart(string regularExp)
 	vector<vector<string>> ourStack;
 	for (int i = 0; i < regularExp.length(); i++)
 	{
-		if ((regularExp[i] >= 'a') && (regularExp[i] <= 'd'))
+		if ((regularExp[i] >= 'a') && (regularExp[i] <= 'c'))
 		{
 			vector<string> ti;
 			string a = "0";
@@ -67,7 +67,7 @@ vector<vector<string>> ParseSmart(string regularExp)
 		// Для всякой следующей буквы из алфавита заводится вектор строк в порядке их использования в выражении
 		else
 		if ((regularExp[i] == '.') && ((regularExp[i - 1] >= 'a') && 
-		(regularExp[i - 1] <= 'd')) && ((regularExp[i - 2] >= 'a') && (regularExp[i - 2] <= 'd')))
+		(regularExp[i - 1] <= 'c')) && ((regularExp[i - 2] >= 'a') && (regularExp[i - 2] <= 'c')))
 		{
 			for (int j = 0; j < ourStack[ourStack.size() - 1].size(); j++)
 				ourStack[ourStack.size() - 2][j] += ourStack[ourStack.size() - 1][j];
