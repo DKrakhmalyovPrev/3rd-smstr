@@ -1,3 +1,7 @@
+/* Реализован Алгоритм Ахо-Карасика. По данному массиву паттернов строится бор разбора и выдаётся отдельная структура
+с суффиксными ссылками. При необходимости и в зависимости от задачи можно написать функции нахождения подстроки, кол-ва вхождений подстрок 
+и т.д. */
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream> 
 #include <stdio.h>
@@ -17,16 +21,19 @@ class Graph
 private:
 	vector<map<char,int>> matr;
 	vector<int> ifFin;
+	
 
 public:
 	Graph(){};
 
 	Graph(int a)
 	{
-		vector<map<char, int>> q(a);
+		map<char, int> l;
 		for (int j = 0; j < a; j++)
+		{
+			matr.push_back(l);
 			ifFin.push_back(0);
-
+		}
 	}
 
 	Graph(const Graph& x)
@@ -50,7 +57,7 @@ public:
 	{
 		map<char, int> q;
 		matr.push_back(q);
-		ifFin[matr.size() - 1] = 0;
+		ifFin.push_back(0);
 	}
 
 	int Size()
@@ -70,6 +77,34 @@ public:
 		else
 			return(0);
 	}
+
+	void recLinks(vector<int>& links, int fathT, char symb)
+	{
+		if (matr[links[fathT]].find(symb) != matr[links[fathT]].end())
+			if(matr[links[fathT]][symb] != matr[fathT][symb])
+		{
+			links[matr[fathT][symb]] = matr[links[fathT]][symb];
+		}
+		else
+			links[matr[fathT][symb]] = 0;
+		for (auto it = matr[matr[fathT][symb]].begin(); it != matr[matr[fathT][symb]].end(); it++)
+		{
+			recLinks(links, matr[fathT][symb], it->first);
+		}
+	}
+	
+	vector<int> Suff_link()
+	{
+		vector<int> links;
+		for (int i = 0; i < matr.size(); i++)
+			links.push_back(0);
+		for (auto it = matr[0].begin(); it != matr[0].end(); it++)
+		{
+			recLinks(links, 0, it->first);
+		}
+		return(links);
+	}
+
 };
 
 Graph ParsePat(vector<string>& pat)
@@ -96,6 +131,7 @@ Graph ParsePat(vector<string>& pat)
 	return(bor);
 }
 
+
 int main()
 {
 	vector<string> patterns;
@@ -109,6 +145,8 @@ int main()
 	}
 	cin >> ourStr;
 	Graph bor = ParsePat(patterns);
-
-
+	vector<int> links = bor.Suff_link();
+	for (int i = 0; i < links.size(); i++)
+		cout << links[i] << " ";
+	return(0);
 }
