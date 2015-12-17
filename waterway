@@ -1,0 +1,137 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <stdio.h>
+#include <cstdlib>
+#include <math.h>
+#include <vector>
+#include <limits.h>
+
+using namespace std;
+
+class FenwickTree
+{
+private:
+	vector<vector<int>> ourMap;
+	vector<vector<int>> left;
+	vector<vector<int>> right;
+public:
+
+	FenwickTree(){};
+
+	FenwickTree(int x, int y)
+	{
+		ourMap.resize(x+1);
+		left.resize(x+1);
+		right.resize(x+1);
+		for (int i = 0; i < x+1; i++)
+		{
+			ourMap[i].resize(y+1);
+			left[i].resize(y+1);
+			right[i].resize(y+1);
+		}
+	}
+
+	FenwickTree(int x, int y, vector<vector<int>>& ourM)
+	{
+		ourMap = ourM;
+		left.resize(x + 1);
+		right.resize(x + 1);
+		for (int i = 0; i < x + 1; i++)
+		{
+			left[i].resize(y + 1);
+			right[i].resize(y + 1);
+		}
+	}
+	
+	int max(int i, int j)
+	{
+		return i > j ? i : j;
+	}
+
+	int G(int x)
+	{
+		return(x - (x&(x - 1)));
+	}
+
+	void PreProc()
+	{
+		for (int i = 0; i<ourMap.size(); i++)
+			for(int j=0; j<ourMap[0].size();j++)
+				Update(i + 1, j+1, ourMap[i][j]);
+	}
+	
+	double Max(int xl, int xr, int yl, int yr)
+	{
+		double res = 0;
+		int i = xl;
+		int j = yl;
+		while ((i + G(i) <= xr) && (j + G(j)<=yr))
+		{
+			res = max(res, right[i][j]);
+			i = i + G(i);
+			j = j + G(j);
+
+		}
+		//if (ourMap[i - 1][j-1] >res) ans = i;
+		res = max(res, ourMap[i - 1][j-1]);
+		i = xr;
+		j = yr;
+		while ((i - G(i) >= xl) && (j - G(j) >= yl))
+		{
+			res = max(res, left[i][j]);
+			i = i - G(i);
+			j = j - G(j);
+		}
+		return res;
+	}
+	
+	void Update(int xr,int yr, double cost)
+	{
+		ourMap[xr - 1][yr-1] = cost;
+		int i = xr;
+		int j = yr;
+		while ((i <= pow(2.0, double(xr))) && (j <= pow(2.0, double(yr)) ))
+		{
+			left[i][j] = max(left[i][j], cost);
+			i = i + G(i);
+			j = j + G(j);
+		}
+		i = xr;
+		j = yr;
+		while ((i>0) && (j>0))
+		{
+			right[i][j] = max(right[i][j], cost);
+			i = i - G(i);
+			j = j - G(j);
+		}
+	}
+
+};
+
+
+
+int main()
+{
+	int num;
+	cin >> num;
+	int x, y, z;
+	cin >> x >> y >> z;
+	vector<int> q(y+1, 0);
+	vector<vector<int>> ourMap;
+	for (int i = 0; i < x+1; i++)
+		ourMap.push_back(q);
+	ourMap[x][y] = z;
+	for (int i = 0; i < num - 1; i++)
+	{
+		cin >> x >> y >> z;
+		if (ourMap.size() < x + 1)
+			ourMap.resize(x + 1);
+		for (int i = 0; i < x + 1; i++)			
+			if (ourMap[i].size() < y);
+			ourMap[i].resize(y + 1);
+			ourMap[x][y] = z;
+	}
+
+	FenwickTree i(ourMap.size(), ourMap[0].size(), ourMap);
+	return(0);
+}
