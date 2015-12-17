@@ -224,7 +224,7 @@
 					vector<double> result(matr.size(), INT_MAX);
 					vector<bool> ifbeen(matr.size(), 0);
 					queue<int> que;
-					int lastbeen = 0;
+					vector<int> fromwhere(matr.size(),0);
 					que.push(start);
 					ifbeen[start] = 1;
 					result[start] = 0;
@@ -236,25 +236,25 @@
 						{
 
 							if ( (matr[ti][i] != -1) && ((ifbeen[i] == 0) || (result[i] > result[ti] + matr[ti][i]) || 
-								((lastbeen == 1) && (result[i] > result[ti] + matr[ti][i]*0.8)) ) && (i != ti))
+								((fromwhere[ti] == 1) && (result[i] > result[ti] + matr[ti][i]*0.8)) ) && (i != ti))
 							{
-								if (lastbeen == 1)
+								if (fromwhere[ti] == 1)
 									result[i] = result[ti] + matr[ti][i] * 0.8;
 								else
 									result[i] = result[ti] + matr[ti][i];
 								ifbeen[i] = 1;
-								lastbeen = 1;
+								fromwhere[i] = 1;
 								que.push(i);
 							}
 							if ((second.matr[ti][i] != -1) && ((ifbeen[i] == 0) || (result[i] > result[ti] + second.matr[ti][i]) ||
-								((lastbeen == 2) && (result[i] > result[ti] + second.matr[ti][i] * 0.8))) && (i != ti))
+								((fromwhere[ti] == 2) && (result[i] > result[ti] + second.matr[ti][i] * 0.8))) && (i != ti))
 							{
-								if (lastbeen==2)
+								if (fromwhere[ti] == 2)
 									result[i] = result[ti] + second.matr[ti][i]*0.8;
 								else
 								result[i] = result[ti] + second.matr[ti][i];
 								ifbeen[i] = 1;
-								lastbeen = 2;
+								fromwhere[i] = 2;
 								if (que.front()!=i)
 								que.push(i);
 							}
