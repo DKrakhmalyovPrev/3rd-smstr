@@ -219,9 +219,135 @@
 					return(compCon);
 				}
 
+				vector<double> transport(Graph& second, int start) const
+				{
+					vector<double> result(matr.size(), INT_MAX);
+					vector<bool> ifbeen(matr.size(), 0);
+					queue<int> que;
+					int lastbeen = 0;
+					que.push(start);
+					ifbeen[start] = 1;
+					result[start] = 0;
+					while (!que.empty())
+					{
+						int ti = que.front();
+						que.pop();
+						for (int i = 0; i < matr.size(); i++)
+						{
+
+							if ( (matr[ti][i] != -1) && ((ifbeen[i] == 0) || (result[i] > result[ti] + matr[ti][i]) || 
+								((lastbeen == 1) && (result[i] > result[ti] + matr[ti][i]*0.8)) ) && (i != ti))
+							{
+								if (lastbeen == 1)
+									result[i] = result[ti] + matr[ti][i] * 0.8;
+								else
+									result[i] = result[ti] + matr[ti][i];
+								ifbeen[i] = 1;
+								lastbeen = 1;
+								que.push(i);
+							}
+							if ((second.matr[ti][i] != -1) && ((ifbeen[i] == 0) || (result[i] > result[ti] + second.matr[ti][i]) ||
+								((lastbeen == 2) && (result[i] > result[ti] + second.matr[ti][i] * 0.8))) && (i != ti))
+							{
+								if (lastbeen==2)
+									result[i] = result[ti] + second.matr[ti][i]*0.8;
+								else
+								result[i] = result[ti] + second.matr[ti][i];
+								ifbeen[i] = 1;
+								lastbeen = 2;
+								if (que.front()!=i)
+								que.push(i);
+							}
+						}
+
+					}
+					return(result);
+				}
+
+				double transport(Graph& second, int start, int finish) const
+				{
+					return(transport(second,start)[finish]);
+				}
+
+
 };
 
 
+int tiestep(vector<vector<int>>& OurMap, vector<vector<int>>& heur, vector<vector<int>>& result, int curv, int curh, int sidev, int sideh)
+{
+	if ((curv == sidev) && (curh == sideh))
+		return(result[curv][curh]);
+
+	if ((curv > 0) && (result[curv - 1][curh] == 0))
+	{
+		result[curv - 1][curh] = result[curv][curh] + OurMap[curv - 1][curh];
+		heur[curv - 1][curh] = heur[curv][curh] + abs(sidev - curv) + abs(sideh - curh);
+	}
+
+	if ((curh > 0) && (result[curv][curh-1] == 0))
+	{
+		result[curv][curh-1] = result[curv][curh] + OurMap[curv][curh-1];
+		heur[curv][curh-1] = heur[curv][curh] + abs(sidev - curv) + abs(sideh - curh);
+	}
+
+	if ((curh <99) && (result[curv][curh +1] == 0))
+	{
+		result[curv][curh + 1] = result[curv][curh] + OurMap[curv][curh + 1];
+		heur[curv][curh + 1] = heur[curv][curh] + abs(sidev - curv) + abs(sideh - curh);
+	}
+
+	if ((curv <99) && (result[curv+1][curh] == 0))
+	{
+		result[curv+1][curh] = result[curv][curh] + OurMap[curv+1][curh];
+		heur[curv+1][curh] = heur[curv][curh] + abs(sidev - curv) + abs(sideh - curh);
+	}
+
+	int minv, minh, minhe; minhe = heur[curv][curh];
+	for (int i = 0; i < 100;i++)
+	for (int j = 0; j < 100; j++)
+		if ((heur[i][j] != 0) && (heur[i][j] < minhe) &&
+			((result[i + 1][j] == 0) || (result[i][j + 1] == 0) || (result[i - 1][j] == 0) || (result[i][j - 1] == 0)))
+		{
+			minhe = heur[i][j];
+			minv = i;
+			minh = j;
+		}
+		int r = tiestep(OurMap, heur, result, minv, minh, sidev, sideh);
+		return(r);
+}
+
+vector<int> tie(vector<vector<int>> & OurMap)
+{
+	vector<int> ti(100, 0);
+	vector<vector<int>> heur;
+	vector<vector<int>> result;
+	for (int i = 0; i < 100; i++)
+	{
+		heur.push_back(ti);
+		result.push_back(ti);
+	}
+	vector<int> tier(4);
+	tier[0] = tiestep(OurMap, heur, result, 50, 50, 0, 0);
+	for (int i = 0; i < 100; i++)
+	{
+		heur[i]=ti;
+		result[i]=ti;
+	}
+	tier[3] = tiestep(OurMap, heur, result, 50, 50, 99, 99);
+	for (int i = 0; i < 100; i++)
+	{
+		heur[i] = ti;
+		result[i] = ti;
+	}
+	tier[2] = tiestep(OurMap, heur, result, 50, 50, 99, 0);
+	for (int i = 0; i < 100; i++)
+	{
+		heur[i] = ti;
+		result[i] = ti;
+	}
+	tier[1] = tiestep(OurMap, heur, result, 50, 50, 0, 99);
+	return(tier);
+}
 
 int TwoSat(string ourStr)
 {
@@ -297,8 +423,30 @@ int TwoSat(string ourStr)
 
 }
 
+int Salesman(Graph& roads)
+{
+	return(0);
+}
+
  int main()
  {
+	 //transport sol
+	 int s;
+	 cin >> s;
+	 Graph gr(s);
+	 gr.ScanGraph();
+	 Graph gr2(s);
+	 gr2.ScanGraph();
+	 int st, fin;
+	 cin >> st >> fin;
+	 double g;
+	 g = gr.transport(gr2, st, fin);
+	 if (g == INT_MAX)
+		 cout << "-1";
+	 else
+		 cout << g; 
+
+	 return(0);
 	 /*FILE* input = fopen("input.txt", "r");
 	 FILE* output = fopen("output.txt", "w");
 	 int n,g;
@@ -321,13 +469,23 @@ int TwoSat(string ourStr)
 	 else
 	 fprintf(output, "%d", g);*/
 	 
-	 string a;
+	 /*string a;
 	 getline(std::cin, a);
 	 int i=TwoSat(a);
 	 if (i)
 		 cout << "YES";
 	 else
 		 cout << "NO";
-	 return(0);
+	 return(0);*/
+
+	 /*vector<int> ti(100, 2);
+	 vector<vector<int>> test;
+	 for (int i = 0; i < 100; i++)
+		 test.push_back(ti);
+	 vector<int> res = tie(test);
+	 for (int i = 0; i < 4; i++)
+		 cout << res[i] << " ";
+	 return(0);*/
+
 
  };
