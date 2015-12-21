@@ -11,9 +11,7 @@
 #include<map>
 using namespace std;
 
-//Она работает. 
-
-
+/* Сука ёб вашу мать как же я заебался писать это дерьмо, я блять убивать готов из-за этой хуйни блять*/
 class Fenwick
 {
 private:
@@ -74,7 +72,7 @@ public:
 			{
 				int max = 0;
 				for (int q = i - R(i); q < i; q++)
-				for (int r = j; r < min(j + G(j), (int)ourMap[i].size()); r++)
+				for (int r = j; r < min(j + G(j)+1, (int)ourMap[i].size()); r++)
 				if (ourMap[q][r]>max)
 					max = ourMap[q][r];
 				RedGreen[i][j] = max;
@@ -90,8 +88,8 @@ public:
 			for (int j = 1; j < ourMap[1].size(); j++)
 			{
 				int max = 0;
-				for (int q = i; q < min(i + G(i), (int)ourMap.size()); q++)
-				for (int r = j; r < min(j + G(j), (int)ourMap[i].size()); r++)
+				for (int q = i; q < min(i + G(i) +1, (int)ourMap.size()); q++)
+				for (int r = j; r < min(j + G(j) +1, (int)ourMap[i].size()); r++)
 				if (r<ourMap[1].size() && q<ourMap.size())
 				if (ourMap[q][r]>max)
 					max = ourMap[q][r];
@@ -108,7 +106,7 @@ public:
 			for (int j = 1; j < ourMap[1].size(); j++)
 			{
 				int max = 0;
-				for (int q = i; q < min(i + G(i), (int)ourMap.size()); q++)
+				for (int q = i; q < min(i + G(i)+1, (int)ourMap.size()); q++)
 				for (int r = j - R(j) ; r < j ; r++)
 				if (ourMap[q][r]>max)
 					max = ourMap[q][r];
@@ -129,61 +127,45 @@ public:
 
 	int GG(int x1, int x2, int y1, int y2)
 	{
-		int cx = x1, cy = y1;
 		int max = 0;
-		while ((cx<x2) && (cy<y2))
-		{
+		for (int cx = x1; cx < x2; cx += G(cx))
+		for (int cy = y1; cy < y2; cy += G(cy))
 			if (GreenGreen[cx][cy] > max)
 				max = GreenGreen[cx][cy];
-			cx = cx + G(cx);
-			cy = cy + G(cy);
-		}
 		return(max);
 	}
 	int GR(int x1, int x2, int y1, int y2)
 	{
-		int cx = x1, cy = y2;
 		int max = 0;
-		while ((cx<x2) && (cy>y1))
-		{
+		for (int cx = x1; cx < x2; cx += G(cx))
+		for (int cy = y2; cy > y1; cy -= R(cy))
 			if (GreenRed[cx][cy] > max)
 				max = GreenRed[cx][cy];
-			cx = cx + G(cx);
-			cy = cy - R(cy);
-		}
 		return(max);
 	}
 	int RG(int x1, int x2, int y1, int y2)
 	{
-		int cx = x2, cy = y1;
 		int max = 0;
-		while ((cx>x1) && (cy<y2))
-		{
+		for (int cx = x2; cx < x1; cx -= R(cx))
+		for (int cy = y1; cy < y2; cy += G(cy))
 			if (RedGreen[cx][cy] > max)
 				max = RedGreen[cx][cy];
-			cx = cx - R(cx);
-			cy = cy + G(cy);
-		}
 		return(max);
 	}
 	int RR(int x1, int x2, int y1, int y2)
 	{
-		int cx = x2, cy = y2;
 		int max = 0;
-		while ((cx>x1) && (cy>y1))
-		{
+		for (int cx = x2; cx > x1; cx -= R(cx))
+		for (int cy = y2; cy > y1; cy -= R(cy))
 			if (RedRed[cx][cy] > max)
 				max = RedRed[cx][cy];
-			cx = cx - R(cx);
-			cy = cy - R(cy);
-		}
 		return(max);
 	}
 	int FindMax(int x1, int x2, int y1, int y2)
 	{
 		
 		int m = 0;
-		m = std::max(0, GG(x1, x2, y1, y2));
+		m = std::max(m, GG(x1, x2, y1, y2));
 		m = std::max(m, GR(x1, x2, y1, y2));
 		m = std::max(m, RG(x1, x2, y1, y2));
 		m = std::max(m, RR(x1, x2, y1, y2));
