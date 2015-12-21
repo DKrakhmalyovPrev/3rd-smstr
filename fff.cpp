@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+/*#define _CRT_SECURE_NO_WARNINGS
 #include <iostream> 
 #include <stdio.h>
 #include <cstdlib>
@@ -8,15 +8,16 @@
 #include <stack>
 #include <limits.h>
 #include <string>
+#include <fstream>
 #include<map>
 using namespace std;
-
+// std::ifstream cin("in_path");
 template<typename top, typename data>
 class Graph
 {
-private:
-	vector<map<top, data>> matr;
 public:
+	vector<map<top, data> > matr;
+
 	Graph(){};
 
 	Graph(int a)
@@ -26,49 +27,46 @@ public:
 			matr.push_back(l);
 	}
 
-	Graph(const Graph& x)
+	Graph(Graph& x)
 	{
 		matr = x.matr;
 	}
-
 	Graph(const Graph& x, const Graph& y)
-	{
+		{
 		map<top, data> l;
 		for (int i = 0; i < x.Size() + y.Size(); i++)
-			matr.push_back(l);
+			 matr.push_back(l);
 		for (auto it = x.matr[0].start(); it != x.matr[0].end(); it++)
-			matr[0][it.first] = it.second;
+			 matr[0][it.first] = it.second;
 		for (auto it = y.matr[0].start(); it != y.matr[0].end(); it++)
-			matr[0][it.first + x.size() - 1] = it.second;
+			 matr[0][it.first + x.size() - 1] = it.second;
 		for (int i = 1; i < x.Size(); i++)
-		{
+			 {
 			for (auto it = x.matr[i].start(); it != x.matr[i].end(); it++)
-				matr[i][it.first] = it.second*0.8;
+				+ matr[i][it.first] = it.second*0.8;
 			for (auto it = y.matr[i].start(); it != y.matr[i].end(); it++)
-				matr[i][it.first + x.size() - 1] = it.second;
-		}
+				+ matr[i][it.first + x.size() - 1] = it.second;
+			}
 		for (int i = x.Size(); i < y.Size() + x.Size(); i++)
-		{
+			 {
 			for (auto it = x.matr[i].start(); it != x.matr[i].end(); it++)
-				matr[i][it.first] = it.second;
+				 matr[i][it.first] = it.second;
 			for (auto it = y.matr[i].start(); it != y.matr[i].end(); it++)
-				matr[i][it.first - x.size()] = it.second*0.8;
-		}
+				 matr[i][it.first - x.size()] = it.second*0.8;
+			}
+		
+			}
 
-	}
-
-	void ScanGraph()
+	void ScanGraph(FILE*& inp)
 	{
-		int tops;
-		cin >> tops;
-		for (int i = 0; i < tops; i++)
+		for (int i = 0; i < this->Size(); i++)
 		{
-			int rib;
-			cin >> rib;
-			for (int j = 0; j < tops; j++)
+			int rib, data;
+			fscanf(inp, "%d%d", &rib,&data);
+			for (int j = 0; j < data; j++)
 			{
 				int l, m;
-				cin >> l >> m;
+				fscanf(inp, "%d%d", &l, &m);
 				matr[i][l] = m;
 			}
 		}
@@ -80,7 +78,7 @@ public:
 	}
 
 
-	int GetRib(int a, top b) const
+	int GetRib(int a, top b) 
 	{
 		return(matr[a][b]);
 	}
@@ -96,7 +94,7 @@ public:
 		return(matr.size());
 	}
 
-	vector<int> BFS(int start) const
+	vector<int> BFS(int start) 
 	{
 		vector<int> result(matr.size(), -1);
 		vector<bool> ifbeen(matr.size(), 0);
@@ -119,7 +117,7 @@ public:
 		return(result);
 	}
 
-	int BFS(int start, int finish) const
+	int BFS(int start, int finish) 
 	{
 		return(BFS(start)[finish]);
 	}
@@ -153,22 +151,33 @@ public:
 	}
 
 
-
-
-/*	auto m_it_start(int i)
+	vector<double> Dijkstra(int start)
 	{
-		auto it;
-		it = matr[i].start();
-		return(it);
+		vector<double> result(matr.size(), INT_MAX);
+		vector<bool> ifbeen(matr.size(), 0);
+		queue<int> que;
+		que.push(start);
+		ifbeen[start] = 1;
+		result[start] = 0;
+		while (!que.empty())
+		{
+			int ti = que.front();
+			que.pop();
+			for (auto it = matr[ti].begin(); it!=matr[ti].end(); it++)
+				if ((ifbeen[(*it).first] == 0) || (result[(*it).first]>result[ti] + (*it).second))
+				 {
+					 result[(*it).first] = result[ti] + (*it).second;
+					 ifbeen[(*it).first] = 1;
+					 que.push((*it).first);
+				}
+		}
+		return(result);
 	}
-	auto m_it_end(int i)
+
+	double Dijkstra(int start, int finish)
 	{
-		auto it;
-		it = matr[i].end();
-		return(it);
-	}*/
-
-
+		return(Dijkstra(start)[finish]);
+	}
 	int Find(int i, top s)
 	{
 		if (matr[i].find(s) != matr[i].end())
@@ -194,7 +203,7 @@ public:
 	}
 
 
-	vector<top> Suff_link()
+	vector<int> Suff_link()
 	{
 		vector<int> links;
 		for (int i = 0; i < matr.size(); i++)
@@ -219,18 +228,19 @@ public:
 		return(finlinks);
 	}
 
-	vector<double> transport(Graph& second, int start) const
-	{
-		Graph i(this, second);
-		return(i.Dijkstra(start));
-	}
-
-	double transport(Graph& second, int start, int finish) const
-	{
-		return(transport(second, start)[finish]);
-	}
 
 };
+
+vector<double> transport(Graph<int, int>& first, Graph<int, int>& second, int start)
+{
+	Graph<int, int> i(first, second);
+	return(i.Dijkstra(start));
+}
+
+double transport(Graph<int, int>& first, Graph<int, int>& second, int start, int finish)
+{
+	return(max(transport(first, second, start)[finish], transport(first, second, start)[finish + second.Size() - 1]));
+}
 
 Graph<char, int> ParsePat(vector<string>& pat, vector<int>& ifFin)
 {
@@ -258,7 +268,6 @@ Graph<char, int> ParsePat(vector<string>& pat, vector<int>& ifFin)
 	return(bor);
 }
 
-template<typename top, typename data>
 void Aho_Karasique()
 {
 	vector<string> patterns;
@@ -273,39 +282,184 @@ void Aho_Karasique()
 	cin >> ourStr;
 	vector<int> ifFin;
 	Graph<char, int> bor = ParsePat(patterns, ifFin);
-	vector<top> links = bor.Suff_link();
+	vector<int> links = bor.Suff_link();
 	vector<int> fin_links = bor.Fin_link(links, ifFin);
-}
-template<typename top, typename data>
-vector<data> Dijkstra(Graph<top,data>& gr, top start) 
-{
-	vector<data> result(gr.Size(), INT_MAX);
-	vector<bool> ifbeen(gr.Size(), 0);
-	queue<top> que;
-	que.push(start);
-	ifbeen[start] = 1;
-	result[start] = 0;
-	while (!que.empty())
-	{
-		top ti = que.front();
-		que.pop();
-		for (auto it = gr.m_it_start(ti); it<gr.m_it_end(ti); it++)
-			if ((ifbeen[it.first()] == 0) || (result[it.first()]>result[ti] + it.second()))
-			{
-				result[it.first()] = result[ti] + it.second();
-				ifbeen[it.first()] = 1;
-				que.push(it.first());
-			}
-	}
-	return(result);
-}
-template<typename top, typename data>
-data Dijkstra(Graph<top,data>& gr, top start, top finish) 
-{
-	return(Dijkstra(gr, start)[finish]);
-}
+}*/
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream> 
+#include <stdio.h>
+#include <cstdlib>
+#include <math.h>
+#include <vector>
+#include <queue>
+#include <stack>
+#include <limits.h>
+#include <string>
+#include<map>
+using namespace std;
 
-SCENARIO("Тестируем какую-то задачу")
+template<typename top, typename data>
+class Graph
 {
-	REQUIRE(transport)
+private:
+	vector<map<top, data>> matr;
+public:
+	Graph(){};
+
+	Graph(int a)
+	{
+		map<top, data> l;
+		for (int j = 0; j < a; j++)
+			matr.push_back(l);
+	}
+
+	Graph( Graph& x)
+	{
+		matr = x.matr;
+	}
+
+	Graph(Graph& x, Graph& y)
+	{	map<top, data> l;
+		for (int i = 0; i < x.Size() + y.Size(); i++)
+			matr.push_back(l);
+		for (auto it = x.matr[0].begin(); it != x.matr[0].end(); it++)
+			matr[0][it->first] = it->second;
+		for (auto it = y.matr[0].begin(); it != y.matr[0].end(); it++)
+			matr[0][it->first + x.Size() - 1] = it->second;
+		for (int i = 1; i < x.Size(); i++)
+		{
+			for (auto it = x.matr[i].begin(); it != x.matr[i].end(); it++)
+				matr[i][it->first] = it->second*0.8;
+			for (auto it = y.matr[i].begin(); it != y.matr[i].end(); it++)
+				matr[i][it->first + x.Size() - 1] = it->second;
+		}
+		for (int i = x.Size()+1; i < y.Size() + x.Size(); i++)
+		{
+			for (auto it = x.matr[i - x.Size()].begin(); it != x.matr[i - x.Size()].end(); it++)
+				matr[i-1][it->first] = it->second;
+			for (auto it = y.matr[i - x.Size()].begin(); it != y.matr[i - x.Size()].end(); it++)
+				matr[i-1][it->first + x.Size() - 1] = it->second*0.8;
+		}
+
+	}
+
+	void ScanGraph(FILE*& inp)
+	{
+		for (int i = 0; i < this->Size(); i++)
+		{
+			int rib, data;
+			fscanf(inp, "%d%d", &rib, &data);
+			for (int j = 0; j < data; j++)
+			{
+				int l, m;
+				fscanf(inp, "%d%d", &l, &m);
+				matr[i][l] = m;
+			}
+		}
+	}
+
+	void SetRib(int a, top b, data s)
+	{
+		matr[a][b] = s;
+	}
+
+
+	int GetRib(int a, top b) 
+	{
+		return(matr[a][b]);
+	}
+
+	void AddRib()
+	{
+		map<top, data> q;
+		matr.push_back(q);
+	}
+
+	int Size()
+	{
+		return(matr.size());
+	}
+
+
+
+	vector<int> Dijkstra(int start) 
+	{
+		vector<int> result(matr.size(), INT_MAX);
+		vector<bool> ifbeen(matr.size(), 0);
+		queue<int> que;
+		que.push(start);
+		ifbeen[start] = 1;
+		result[start] = 0;
+		while (!que.empty())
+		{
+			int ti = que.front();
+			que.pop();
+			for (auto it = matr[ti].begin(); it!=matr[ti].end(); it++)
+				if ((ifbeen[it->first] == 0) || (result[it->first]>result[ti] + it->second))
+				{
+					result[it->first] = result[ti] + it->second;
+					ifbeen[it->first] = 1;
+					que.push(it->first);
+				}
+		}
+		return(result);
+	}
+
+	int Dijkstra(int start, int finish) 
+	{
+		return(Dijkstra(start)[finish]);
+	}
+
+
+
+
+	vector<int> transport(Graph& second, int start) 
+	{
+		Graph i(*this, second);
+		return(i.Dijkstra(start));
+	}
+
+	int transport(Graph& second, int start, int finish) 
+	{
+		return(transport(second, start)[finish] < transport(second, start)[finish + second.Size() - 1]
+			? transport(second, start)[finish] : transport(second, start)[finish + second.Size() - 1]);
+
+	}
+
+};
+
+
+
+
+
+void test_transport()
+{
+	FILE* inp = fopen("D:\\testtrans.txt.txt", "r+");
+	cout << inp;
+	
+	int num_t;
+	fscanf(inp, "%d", &num_t);
+	for (int i = 0; i < num_t; i++)
+	{
+		int nr;
+		fscanf(inp, "%d", &nr);
+		Graph<int, int> frs(nr), snd(nr);
+		frs.ScanGraph(inp);
+		snd.ScanGraph(inp);
+		int st, fin;
+		fscanf(inp, "%d%d", &st, &fin);
+		int res;
+		fscanf(inp, "%d", &res);
+		if (res != frs.transport( snd, st, fin))
+			cout << "Invalid test";
+		cout << frs.transport( snd, st, fin);
+	}
+	cout << "Tests fin";
+}
+int main()
+{
+	test_transport();
+	
+	
+	return(0);
 }
