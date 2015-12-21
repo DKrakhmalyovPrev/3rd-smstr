@@ -1,137 +1,213 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include <iostream>
+#include <iostream> 
 #include <stdio.h>
 #include <cstdlib>
 #include <math.h>
 #include <vector>
+#include <queue>
+#include <stack>
 #include <limits.h>
-
+#include <string>
+#include<map>
 using namespace std;
 
-class FenwickTree
+class Fenwick
 {
 private:
 	vector<vector<int>> ourMap;
-	vector<vector<int>> left;
-	vector<vector<int>> right;
+	vector<vector<int>> RedRed;
+	vector<vector<int>> RedGreen;
+	vector<vector<int>> GreenRed;
+	vector<vector<int>> GreenGreen;
+
 public:
+	Fenwick(){};
 
-	FenwickTree(){};
-
-	FenwickTree(int x, int y)
+	Fenwick(vector<vector<int>>& x)
 	{
-		ourMap.resize(x+1);
-		left.resize(x+1);
-		right.resize(x+1);
-		for (int i = 0; i < x+1; i++)
-		{
-			ourMap[i].resize(y+1);
-			left[i].resize(y+1);
-			right[i].resize(y+1);
-		}
-	}
-
-	FenwickTree(int x, int y, vector<vector<int>>& ourM)
-	{
-		ourMap = ourM;
-		left.resize(x + 1);
-		right.resize(x + 1);
-		for (int i = 0; i < x + 1; i++)
-		{
-			left[i].resize(y + 1);
-			right[i].resize(y + 1);
-		}
-	}
-	
-	int max(int i, int j)
-	{
-		return i > j ? i : j;
+		ourMap = x;
+		vector<int> s(x[0].size(), 0);
+		vector<vector<int>> ss(x.size(), s);
+		RedRed = ss;
+		RedGreen = ss;
+		GreenGreen = ss;
+		GreenRed = ss;
 	}
 
 	int G(int x)
 	{
+		if (x != 1)
+			return(x&(x + 1));
+		else
+		return(1);
+	}
+	int R(int x)
+	{
 		return(x - (x&(x - 1)));
 	}
 
-	void PreProc()
+	void DoRedRed()
 	{
-		for (int i = 0; i<ourMap.size(); i++)
-			for(int j=0; j<ourMap[0].size();j++)
-				Update(i + 1, j+1, ourMap[i][j]);
+		
+		for (int i = 1; i < ourMap.size(); i++)
+		{
+			for (int j = 1; j < ourMap[i].size(); j++)
+			{
+				int max = 0;
+				for (int q = i - R(i); q < i; q++)
+				for (int r = j - R(j); r < j; r++)
+				if (ourMap[q][r]>max)
+					max = ourMap[q][r];
+				RedRed[i][j] = max;
+			}
+		}
 	}
 	
-	double Max(int xl, int xr, int yl, int yr)
+	void DoRedGreen()
 	{
-		double res = 0;
-		int i = xl;
-		int j = yl;
-		while ((i + G(i) <= xr) && (j + G(j)<=yr))
+		for (int i = 1; i < ourMap.size(); i++)
 		{
-			res = max(res, right[i][j]);
-			i = i + G(i);
-			j = j + G(j);
-
-		}
-		//if (ourMap[i - 1][j-1] >res) ans = i;
-		res = max(res, ourMap[i - 1][j-1]);
-		i = xr;
-		j = yr;
-		while ((i - G(i) >= xl) && (j - G(j) >= yl))
-		{
-			res = max(res, left[i][j]);
-			i = i - G(i);
-			j = j - G(j);
-		}
-		return res;
-	}
-	
-	void Update(int xr,int yr, double cost)
-	{
-		ourMap[xr - 1][yr-1] = cost;
-		int i = xr;
-		int j = yr;
-		while ((i <= pow(2.0, double(xr))) && (j <= pow(2.0, double(yr)) ))
-		{
-			left[i][j] = max(left[i][j], cost);
-			i = i + G(i);
-			j = j + G(j);
-		}
-		i = xr;
-		j = yr;
-		while ((i>0) && (j>0))
-		{
-			right[i][j] = max(right[i][j], cost);
-			i = i - G(i);
-			j = j - G(j);
+			for (int j = 1; j < ourMap[1].size(); j++)
+			{
+				int max = 0;
+				for (int q = i - R(i); q < i; q++)
+				for (int r = j; r < min(j + G(j), (int)ourMap[i].size()); r++)
+				if (ourMap[q][r]>max)
+					max = ourMap[q][r];
+				RedGreen[i][j] = max;
+			}
 		}
 	}
 
+	void DoGreenGreen()
+	{
+		
+		for (int i = 1; i < ourMap.size(); i++)
+		{
+			for (int j = 1; j < ourMap[1].size(); j++)
+			{
+				int max = 0;
+				for (int q = i; q < min(i + G(i), (int)ourMap.size()); q++)
+				for (int r = j; r < min(j + G(j), (int)ourMap[i].size()); r++)
+				if (r<ourMap[1].size() && q<ourMap.size())
+				if (ourMap[q][r]>max)
+					max = ourMap[q][r];
+				RedGreen[i][j] = max;
+			}
+		}
+	}
+
+	void DoGreenRed()
+	{
+		
+		for (int i = 1; i < ourMap.size(); i++)
+		{
+			for (int j = 1; j < ourMap[1].size(); j++)
+			{
+				int max = 0;
+				for (int q = i; q < min(i + G(i), (int)ourMap.size()); q++)
+				for (int r = j - R(j) ; r < j ; r++)
+				if (ourMap[q][r]>max)
+					max = ourMap[q][r];
+				RedGreen[i][j] = max;
+			}
+		}
+	}
+
+	void ParceMyFuckingTree()
+	{
+		
+		this->DoGreenGreen();
+		this->DoGreenRed();
+		this->DoRedGreen();
+		this->DoRedRed();
+		cout << "Rasparce";
+		
+	}
+
+	int GG(int x1, int x2, int y1, int y2)
+	{
+		int cx = x1, cy = y1;
+		int max = 0;
+		while ((cx<x2) && (cy<y2))
+		{
+			if (GreenGreen[cx][cy] > max)
+				max = GreenGreen[cx][cy];
+			cx = cx + G(cx);
+			cy = cy + G(cy);
+		}
+		return(max);
+	}
+	int GR(int x1, int x2, int y1, int y2)
+	{
+		int cx = x1, cy = y2;
+		int max = 0;
+		while ((cx<x2) && (cy>y1))
+		{
+			if (GreenGreen[cx][cy] > max)
+				max = GreenGreen[cx][cy];
+			cx = cx + G(cx);
+			cy = cy - R(cy);
+		}
+		return(max);
+	}
+	int RG(int x1, int x2, int y1, int y2)
+	{
+		int cx = x2, cy = y1;
+		int max = 0;
+		while ((cx>x1) && (cy<y2))
+		{
+			if (GreenGreen[cx][cy] > max)
+				max = GreenGreen[cx][cy];
+			cx = cx - R(cx);
+			cy = cy + G(cy);
+		}
+		return(max);
+	}
+	int RR(int x1, int x2, int y1, int y2)
+	{
+		int cx = x2, cy = y2;
+		int max = 0;
+		while ((cx>x1) && (cy>y1))
+		{
+			if (GreenGreen[cx][cy] > max)
+				max = GreenGreen[cx][cy];
+			cx = cx - R(cx);
+			cy = cy - R(cy);
+		}
+		return(max);
+	}
+	int FindMax(int x1, int x2, int y1, int y2)
+	{
+		
+		int m = 0;
+		m = std::max(0, GG(x1, x2, y1, y2));
+		m = std::max(m, GR(x1, x2, y1, y2));
+		m = std::max(m, RG(x1, x2, y1, y2));
+		m = std::max(m, RR(x1, x2, y1, y2));
+		return(m);
+	}
 };
-
-
 
 int main()
 {
-	int num;
-	cin >> num;
-	int x, y, z;
-	cin >> x >> y >> z;
-	vector<int> q(y+1, 0);
-	vector<vector<int>> ourMap;
-	for (int i = 0; i < x+1; i++)
-		ourMap.push_back(q);
-	ourMap[x][y] = z;
-	for (int i = 0; i < num - 1; i++)
+	int a, b;
+	cin >>a>> b;
+	vector<int> line(b+1, 0);
+	vector<vector<int>> ourMap(a+1,line);
+	int n;
+	cin >> n;
+	for (int i = 0; i < n; i++)
 	{
+		int x, y, z;
 		cin >> x >> y >> z;
-		if (ourMap.size() < x + 1)
-			ourMap.resize(x + 1);
-		for (int i = 0; i < x + 1; i++)			
-			if (ourMap[i].size() < y);
-			ourMap[i].resize(y + 1);
-			ourMap[x][y] = z;
+		ourMap[x][y] = z;
 	}
-
-	FenwickTree i(ourMap.size(), ourMap[0].size(), ourMap);
+	Fenwick ourTree(ourMap);
+	ourTree.ParceMyFuckingTree();
+	int x1, x2, y1, y2;
+	cin >> x1 >> y1 >> x2 >> y2 ;
+	cout << ourTree.FindMax(x1, x2, y1, y2);
 	return(0);
+
 }
