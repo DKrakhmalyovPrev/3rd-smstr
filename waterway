@@ -11,6 +11,7 @@
 #include<map>
 using namespace std;
 
+
 class Fenwick
 {
 private:
@@ -92,7 +93,7 @@ public:
 				if (r<ourMap[1].size() && q<ourMap.size())
 				if (ourMap[q][r]>max)
 					max = ourMap[q][r];
-				RedGreen[i][j] = max;
+				GreenGreen[i][j] = max;
 			}
 		}
 	}
@@ -109,7 +110,7 @@ public:
 				for (int r = j - R(j) ; r < j ; r++)
 				if (ourMap[q][r]>max)
 					max = ourMap[q][r];
-				RedGreen[i][j] = max;
+				GreenRed[i][j] = max;
 			}
 		}
 	}
@@ -121,7 +122,6 @@ public:
 		this->DoGreenRed();
 		this->DoRedGreen();
 		this->DoRedRed();
-		cout << "Rasparce";
 		
 	}
 
@@ -144,8 +144,8 @@ public:
 		int max = 0;
 		while ((cx<x2) && (cy>y1))
 		{
-			if (GreenGreen[cx][cy] > max)
-				max = GreenGreen[cx][cy];
+			if (GreenRed[cx][cy] > max)
+				max = GreenRed[cx][cy];
 			cx = cx + G(cx);
 			cy = cy - R(cy);
 		}
@@ -157,8 +157,8 @@ public:
 		int max = 0;
 		while ((cx>x1) && (cy<y2))
 		{
-			if (GreenGreen[cx][cy] > max)
-				max = GreenGreen[cx][cy];
+			if (RedGreen[cx][cy] > max)
+				max = RedGreen[cx][cy];
 			cx = cx - R(cx);
 			cy = cy + G(cy);
 		}
@@ -170,8 +170,8 @@ public:
 		int max = 0;
 		while ((cx>x1) && (cy>y1))
 		{
-			if (GreenGreen[cx][cy] > max)
-				max = GreenGreen[cx][cy];
+			if (RedRed[cx][cy] > max)
+				max = RedRed[cx][cy];
 			cx = cx - R(cx);
 			cy = cy - R(cy);
 		}
