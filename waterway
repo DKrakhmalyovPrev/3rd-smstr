@@ -11,6 +11,8 @@
 #include<map>
 using namespace std;
 
+//Она работает. 
+
 
 class Fenwick
 {
