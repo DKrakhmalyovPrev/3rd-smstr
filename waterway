@@ -11,7 +11,6 @@
 #include<map>
 using namespace std;
 
-/* Сука ёб вашу мать как же я заебался писать это дерьмо, я блять убивать готов из-за этой хуйни блять*/
 class Fenwick
 {
 private:
