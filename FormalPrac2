@@ -6,7 +6,7 @@
 Правка 2: Налажена работа с вложенными "*", появились проблемы с чтением первого символа.
 Правка 3: Программа работает корректно с первым символом и сложными конструкциями циклов и вариаций. Время работы остаётся
 экспоненциальным(относительно количества "*" в выражении).
-Правка 4: Введён символ '1'. Работа с ним хорошо присывается в алгоритм, так что проблем не должно возникнуть. Поправлена работа 
+Правка 4: Введён символ '1'. Работа с ним хорошо присывается в алгоритм, так что проблем не должно возникнуть. Поправлена работа
 со вхожениями '*.' и '+.'. До текущей версии такой вариант не рассматривался, что приводило к ошибке входных данных. К исправлениям
 прилагаются комментарии.
 Правка 5: Решён вопрос с бесконечной рекурсией, вызванной внесением символа "1". Исправлен алгоритм решения задачи(можете проследить
@@ -102,11 +102,11 @@ vector<vector<string>> ParseSmart(string regularExp)
 		// Для оператора '+' выполняется конкатенация двух последних векторов
 		else
 		if (regularExp[i] == '*')
-		{	
+		{
 			int q = 1;
 			string a("0");
 			int hm = i - 1;
-			while ((regularExp[hm] == '.') && (hm>=0))
+			while ((regularExp[hm] == '.') && (hm >= 0))
 			{
 				q++;
 				hm--;
@@ -114,7 +114,7 @@ vector<vector<string>> ParseSmart(string regularExp)
 			ourStack[ourStack.size() - q].push_back(YC);
 			a[0] = '0' + q + 1;
 			ourStack[ourStack.size() - q].push_back(a);
-			a[0] = '0' + q ;
+			a[0] = '0' + q;
 			vector<string> ti;
 			ti.push_back(YR);
 			ti.push_back(a);
@@ -144,44 +144,40 @@ int JustDoIt(vector<vector<string>>& ourStack, string ourWord, int stackPos, int
 
 	int ifAns = 0;
 	int ifstar = 0;
-	if (ourStack[stackPos].size() >= 3) 
-		if(ourStack[stackPos][ourStack[stackPos].size()-2].compare(YC) == 0)
-			ifstar = 1;
+	if (ourStack[stackPos].size() >= 3)
+	if (ourStack[stackPos][ourStack[stackPos].size() - 2].compare(YC) == 0)
+		ifstar = 1;
 	//т.н. Маркер звёздочки. Показывает, что данное состояние содержит пустой переход и некий цикл.
 	for (int i = 0; i < ourStack[stackPos].size(); i++)
 	{
-		if (ourStack[stackPos][i].compare(YC) == 0)
-		{
-			ifAns += JustDoIt(ourStack, ourWord, stackPos + (ourStack[stackPos][i + 1][0] - '0'), wordPos);
-		}
 		//Переносит область работы на длину цикла по звезде(то, что можно не использовать в слове), запуская рекурсию
-		int co = 0;
-		int j = 0;
 		if (ourStack[stackPos][i].compare(YR) == 0)
 		{
 			ifAns += JustDoIt(ourStack, ourWord, stackPos - (ourStack[stackPos][i + 1][0] - '0'), wordPos);
 		}
 		else
-		if (ourStack[stackPos][i].length() <= ourWord.length() - wordPos)
-		while (j < ourStack[stackPos][i].length())
+		if (ourStack[stackPos][i].compare(YC) == 0)
 		{
-			if (ourStack[stackPos][i][j] != ourWord[wordPos + j])
-				co = 1;
-			j++;
+			ifAns += JustDoIt(ourStack, ourWord, stackPos + (ourStack[stackPos][i + 1][0] - '0'), wordPos);
 		}
-		if (co == 0)
+		else
+		if (ourStack[stackPos][i].length() <= ourWord.length() - wordPos)
 		{
-			//Ошибка с зацикленностью, в общем, тут была. Когда символ "1" стоял под "*", он зацикливался, постоянно пропускаясь
-			//И запуская цикл с той же позицией слова и стека. Запретили.
-			if (ourStack[stackPos][i].length() != 0)
+			int co = 0;
+			int j = 0;
+			while (j < ourStack[stackPos][i].length())
 			{
-				ifAns += JustDoIt(ourStack, ourWord, stackPos + 1, wordPos + ourStack[stackPos][i].length());
-				if (ifstar == 1)
-					ifAns += JustDoIt(ourStack, ourWord, stackPos, wordPos + ourStack[stackPos][i].length());
+				if (ourStack[stackPos][i][j] != ourWord[wordPos + j])
+					co = 1;
+				j++;
 			}
-			else
+			if (co == 0)
 			{
-				ifAns += JustDoIt(ourStack, ourWord, stackPos + 1, wordPos);
+				//Ошибка с зацикленностью, в общем, тут была. Когда символ "1" стоял под "*", он зацикливался, постоянно пропускаясь
+				//И запуская цикл с той же позицией слова и стека. Запретили.
+				ifAns += JustDoIt(ourStack, ourWord, stackPos + 1, wordPos + ourStack[stackPos][i].length());
+				if ((ifstar == 1) && (ourStack[stackPos][i].length() != 0))
+					ifAns += JustDoIt(ourStack, ourWord, stackPos, wordPos + ourStack[stackPos][i].length());
 			}
 		}
 		//Соответственно, проверяет для всех вариантов из вектора, можно ли пройти по "ребру", который те задают. Если имелась звёздочка-- запускает цикл, возвращаясь в исходное состояние
@@ -199,11 +195,11 @@ int main()
 	cin >> regularExp;
 	cin >> ourWord;
 	vector<vector<string>> ourStack = ParseSmart(regularExp);
-	/*for (int i = 0; i < ourStack.size(); i++)
-	{
-		cout << '\n';
-		for (int j = 0; j < ourStack[i].size(); j++)
-			cout << ourStack[i][j] << ' ';
+	for (int i = 0; i < ourStack.size(); i++)
+	/*{
+	cout << '\n';
+	for (int j = 0; j < ourStack[i].size(); j++)
+	cout << ourStack[i][j] << ' ';
 
 	}*/
 	if (JustDoIt(ourStack, ourWord, 0, 0))
