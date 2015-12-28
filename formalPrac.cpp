@@ -161,7 +161,7 @@ int JustDoIt(vector<vector<string>>& ourStack, string ourWord, int stackPos, int
 		if (co == 0)
 		{
 			ifAns += JustDoIt(ourStack, ourWord, stackPos + 1, wordPos + ourStack[stackPos][i].length());
-			if (ifstar == 1)
+			if ((ifstar == 1) && (ourStack[stackPos][i].length() != 0))
 				ifAns += JustDoIt(ourStack, ourWord, stackPos, wordPos + ourStack[stackPos][i].length());
 		}
 		//Соответственно, проверяет для всех вариантов из вектора, можно ли пройти по "ребру", который те задают. Если имелась звёздочка-- запускает цикл, возвращаясь в исходное состояние
