@@ -100,10 +100,17 @@ vector<vector<string>> ParseSmart(string regularExp)
 		// Для оператора '+' выполняется конкатенация двух последних векторов
 		else
 		if (regularExp[i] == '*')
+		if (regularExp[i - 1] == '*')
 		{
+		}
+		else
+		{
+			//if ((regularExp[i - 2] == '1') && (regularExp[i - 1] == '+'))
+			//if (ourStack[ourStack.size() - 1][ourStack[ourStack.size() - 1].size() - 1].compare("") == 0)
+				//ourStack[ourStack.size() - 1][ourStack[ourStack.size() - 1].size() - 1].pop_back();
 			int q = 1;
 			string a("0");
-			int hm = i - 1;
+			int hm = i-1;
 			while ((regularExp[hm] == '.') && (hm >= 0))
 			{
 				q++;
@@ -193,12 +200,12 @@ int main()
 	cin >> regularExp;
 	cin >> ourWord;
 	vector<vector<string>> ourStack = ParseSmart(regularExp);
-	/*for (int i = 0; i < ourStack.size(); i++)
+	for (int i = 0; i < ourStack.size(); i++)
 	{
 	cout << '\n';
-	for (int j = 0; j < ourStack[i].size(); j++)
+	/*for (int j = 0; j < ourStack[i].size(); j++)
 	cout << ourStack[i][j] << ' ';
-	} */
+	}*/
 	if (JustDoIt(ourStack, ourWord, 0, 0))
 		cout << "YES";
 	else
