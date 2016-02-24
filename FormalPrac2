@@ -82,16 +82,14 @@ vector<vector<string>> ParseSmart(string regularExp)
 		// Для всякой следующей буквы из алфавита заводится вектор строк в порядке их использования в выражении.
 		// Для '1' задаётся вектор пустой строки. 
 		else
-		if ((regularExp[i] == '.') && ((regularExp[i - 1] >= 'a') && (regularExp[i - 1] <= 'd')) && ((regularExp[i - 2] >= 'a') && (regularExp[i - 2] <= 'd')))
+		if ((regularExp[i] == '.') && ( ((regularExp[i - 1] >= 'a') && (regularExp[i - 1] <= 'd')) && ((regularExp[i - 2] >= 'a') && (regularExp[i - 2] <= 'd')) || regularExp[i - 1]=='.'))
 		{
 			for (int j = 0; j < ourStack[ourStack.size() - 1].size(); j++)
 				ourStack[ourStack.size() - 2][j] += ourStack[ourStack.size() - 1][j];
 			ourStack.pop_back();
 		}
 		// Для двух букв из алфавита в выражении подряд выполняется конкатенация внутри одной строки
-		else
-		if (regularExp[i] == '.'){}
-		// Варианты '*.', '+.', '..' не конкатенируют векторы, а просто оставляют их в текущей последовательности.
+		// Варианты '*.', '+.' не конкатенируют векторы, а просто оставляют их в текущей последовательности.
 		else
 		if (regularExp[i] == '+')
 		{
@@ -200,7 +198,7 @@ int main()
 	cout << '\n';
 	for (int j = 0; j < ourStack[i].size(); j++)
 	cout << ourStack[i][j] << ' ';
-	}*/
+	} */
 	if (JustDoIt(ourStack, ourWord, 0, 0))
 		cout << "YES";
 	else
