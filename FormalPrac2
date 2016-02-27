@@ -1,17 +1,6 @@
 /*Практикум по формальным языкам.
 Задание 9: Дан язык, заданный регулярным выражением и слово из алфавита {a,b,c}.
 Проверить, содержит ли язык данное слово.
-
-Правка 1: Программа не проходит тесты, содержащие вложенные "*". Будет исправлено в следующих версиях.
-Правка 2: Налажена работа с вложенными "*", появились проблемы с чтением первого символа.
-Правка 3: Программа работает корректно с первым символом и сложными конструкциями циклов и вариаций. Время работы остаётся
-экспоненциальным(относительно количества "*" в выражении).
-Правка 4: Введён символ '1'. Работа с ним хорошо присывается в алгоритм, так что проблем не должно возникнуть. Поправлена работа
-со вхожениями '*.' и '+.'. До текущей версии такой вариант не рассматривался, что приводило к ошибке входных данных. К исправлениям
-прилагаются комментарии.
-Правка 5: Решён вопрос с бесконечной рекурсией, вызванной внесением символа "1". Исправлен алгоритм решения задачи(можете проследить
-это по обработке символа "*". Сложные тесты проходит со стопроцентной вероятностью, однако, асимптотика возросла и на длинных
-однообразных строках программа может работать очень долго. Увы.
 */
 
 
@@ -22,6 +11,7 @@
 using namespace std;
 string YC("YOUCANSKIPIT");
 string YR("YOUCANRETURN");
+int ifAns = 0;
 
 string ParseStupid(string regularExp)
 //Рудимент, переводящий обратную польскую запись в традиционное регулярное выражение. Оставлен для пущего понимания схемы выражения. 
@@ -82,14 +72,19 @@ vector<vector<string>> ParseSmart(string regularExp)
 		// Для всякой следующей буквы из алфавита заводится вектор строк в порядке их использования в выражении.
 		// Для '1' задаётся вектор пустой строки. 
 		else
-		if ((regularExp[i] == '.') && ( ((regularExp[i - 1] >= 'a') && (regularExp[i - 1] <= 'd')) && ((regularExp[i - 2] >= 'a') && (regularExp[i - 2] <= 'd')) || regularExp[i - 1]=='.'))
+		if ((regularExp[i] == '.') && ((regularExp[i - 1] >= 'a') && (regularExp[i - 1] <= 'd')) && ((regularExp[i - 2] >= 'a') && (regularExp[i - 2] <= 'd'))) 
 		{
 			for (int j = 0; j < ourStack[ourStack.size() - 1].size(); j++)
-				ourStack[ourStack.size() - 2][j] += ourStack[ourStack.size() - 1][j];
+			for (int q = 0; q < ourStack[ourStack.size() - 2].size(); q++)
+				ourStack[ourStack.size() - 2][q] += ourStack[ourStack.size() - 1][j];
 			ourStack.pop_back();
 		}
 		// Для двух букв из алфавита в выражении подряд выполняется конкатенация внутри одной строки
 		// Варианты '*.', '+.' не конкатенируют векторы, а просто оставляют их в текущей последовательности.
+		else
+		if ((regularExp[i] == '.'))
+		{
+		}
 		else
 		if (regularExp[i] == '+')
 		{
@@ -100,14 +95,8 @@ vector<vector<string>> ParseSmart(string regularExp)
 		// Для оператора '+' выполняется конкатенация двух последних векторов
 		else
 		if (regularExp[i] == '*')
-		if (regularExp[i - 1] == '*')
-		{
-		}
-		else
-		{
-			//if ((regularExp[i - 2] == '1') && (regularExp[i - 1] == '+'))
-			//if (ourStack[ourStack.size() - 1][ourStack[ourStack.size() - 1].size() - 1].compare("") == 0)
-				//ourStack[ourStack.size() - 1][ourStack[ourStack.size() - 1].size() - 1].pop_back();
+			if (regularExp[i - 1] != '*')
+			{
 			int q = 1;
 			string a("0");
 			int hm = i-1;
@@ -116,6 +105,9 @@ vector<vector<string>> ParseSmart(string regularExp)
 				q++;
 				hm--;
 			}
+			for (int i = 0; i < ourStack[ourStack.size() - q].size();i++)
+			if (ourStack[ourStack.size() - q][i] == "")
+				ourStack[ourStack.size() - q][i] = "no";
 			ourStack[ourStack.size() - q].push_back(YC);
 			a[0] = '0' + q + 1;
 			ourStack[ourStack.size() - q].push_back(a);
@@ -123,9 +115,9 @@ vector<vector<string>> ParseSmart(string regularExp)
 			vector<string> ti;
 			ti.push_back(YR);
 			ti.push_back(a);
-			ti.push_back("");
 			ourStack.push_back(ti);
-		}
+			}
+			else {}
 		//Для оператора '*' по последнему вектору ставится маркер, который позже используется при разборе и количество символов, которое определяется длиной скобки, по которой стоит *
 		else
 		{
@@ -142,12 +134,13 @@ vector<vector<string>> ParseSmart(string regularExp)
 int JustDoIt(vector<vector<string>>& ourStack, string ourWord, int stackPos, int wordPos)
 //Рекурсивная функция, разбирающая выражение посимвольно и проходящая по всему недетерменированному автомату. Если успех был достигнут хоть раз -- он выносится в ответ
 {
+	if (ifAns >= 1)
+		return(0);
 	if ((stackPos == ourStack.size()) && (wordPos == ourWord.length()))
 		return(1);
 	if ((stackPos >= ourStack.size()) || (wordPos > ourWord.length()))
 		return(0);
 
-	int ifAns = 0;
 	int ifstar = 0;
 	if (ourStack[stackPos].size() >= 3)
 	if (ourStack[stackPos][ourStack[stackPos].size() - 2].compare(YC) == 0)
@@ -200,10 +193,10 @@ int main()
 	cin >> regularExp;
 	cin >> ourWord;
 	vector<vector<string>> ourStack = ParseSmart(regularExp);
-	for (int i = 0; i < ourStack.size(); i++)
+	/*for (int i = 0; i < ourStack.size(); i++)
 	{
 	cout << '\n';
-	/*for (int j = 0; j < ourStack[i].size(); j++)
+	for (int j = 0; j < ourStack[i].size(); j++)
 	cout << ourStack[i][j] << ' ';
 	}*/
 	if (JustDoIt(ourStack, ourWord, 0, 0))
@@ -213,5 +206,4 @@ int main()
 
 
 	return(0);
-
 }
