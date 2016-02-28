@@ -1,0 +1,190 @@
+#include <iostream>
+#include <string>
+#include <map>
+#include <set>
+#include <stack>
+#include <stdexcept>
+
+std::map <std::string, bool> is_substr;
+
+bool is_suffix(const std::string& word, const std::string& suff)
+{
+	for (unsigned int v = 1; v <= suff.length(); v++)
+	if (word[word.length() - v] != suff[suff.length() - v])
+		return false;
+	return true;
+}
+
+bool check(const std::string& word_, const std::string& regular_expression_, unsigned int& len_)
+{
+	std::stack <std::set <std::string> > stack_;
+
+	while (!stack_.empty())
+		stack_.pop();
+
+	for (unsigned int v = 0; v < regular_expression_.length(); v++)
+	{
+		if (regular_expression_[v] == '1')
+		{
+			std::set <std::string> bufset;
+			bufset.clear();
+			bufset.insert("");
+			stack_.push(bufset);
+		}
+
+		if ((regular_expression_[v] == 'a') || (regular_expression_[v] == 'b') || (regular_expression_[v] == 'c'))
+		{
+			std::string cur_word = "";
+			cur_word += regular_expression_[v];
+			std::set <std::string> bufset;
+			bufset.clear();
+			if (is_substr[cur_word])
+				bufset.insert(cur_word);
+			stack_.push(bufset);
+		}
+
+		if (regular_expression_[v] == '+')
+		{
+			std::set <std::string> bufset;
+			std::set <std::string> set1;
+			std::set <std::string> set2;
+			bufset.clear();
+
+			if (stack_.size() < 2)
+				throw std::invalid_argument("regular expression isn't correct");
+
+			set1 = stack_.top();
+			stack_.pop();
+			set2 = stack_.top();
+			stack_.pop();
+
+			for (std::set <std::string>::iterator it = set1.begin(); it != set1.end(); it++)
+				bufset.insert(*it);
+			for (std::set <std::string>::iterator it = set2.begin(); it != set2.end(); it++)
+				bufset.insert(*it);
+
+			stack_.push(bufset);
+		}
+
+		if (regular_expression_[v] == '.')
+		{
+			std::set <std::string> bufset;
+			std::set <std::string> set1;
+			std::set <std::string> set2;
+			bufset.clear();
+
+			if (stack_.size() < 2)
+				throw std::invalid_argument("regular expression isn't correct");
+
+			set1 = stack_.top();
+			stack_.pop();
+			set2 = stack_.top();
+			stack_.pop();
+
+			for (std::set <std::string>::iterator it1 = set1.begin(); it1 != set1.end(); it1++)
+			for (std::set <std::string>::iterator it2 = set2.begin(); it2 != set2.end(); it2++)
+			{
+				std::string cur_word = *it2 + *it1;
+				if ((cur_word.length() <= word_.length()) && (is_substr[cur_word]))
+					bufset.insert(cur_word);
+			}
+
+			stack_.push(bufset);
+		}
+
+		if (regular_expression_[v] == '*')
+		{
+			std::set <std::string> bufset;
+			std::set <std::string> set_;
+
+			bufset.clear();
+
+			if (stack_.size() < 1)
+				throw std::invalid_argument("regular expression isn't correct");
+
+			set_ = stack_.top();
+			stack_.pop();
+			set_.erase("");
+
+			bufset.insert("");
+			for (std::set <std::string>::iterator it = set_.begin(); it != set_.end(); it++)
+				bufset.insert(*it);
+
+			std::set <std::string> bufset_;
+			bufset_.clear();
+			bufset_.insert("");
+			while (true)
+			{
+				std::set <std::string> bs;
+				bs.clear();
+				bool ok = false;
+
+				for (std::set <std::string>::iterator it = bufset_.begin(); it != bufset_.end(); it++)
+				for (std::set <std::string>::iterator it_ = set_.begin(); it_ != set_.end(); it_++)
+				{
+					std::string cur_word = *it + *it_;
+					if ((cur_word.length() <= word_.length()) && (is_substr[cur_word]))
+					{
+						bufset.insert(cur_word);
+						bs.insert(cur_word);
+						ok = true;
+					}
+				}
+
+				bufset_ = bs;
+				if (!ok)
+					break;
+			}
+
+			stack_.push(bufset);
+		}
+	}
+
+	if (stack_.size() != 1)
+		throw std::invalid_argument("regular expression isn't correct");
+
+	std::set <std::string> set_;
+	set_ = stack_.top();
+	stack_.pop();
+	for (std::set <std::string>::iterator it = set_.begin(); it != set_.end(); it++)
+	if ((is_suffix(word_, *it)) && ((*it).length() > len_))
+		len_ = (*it).length();
+
+	if (len_ > 0)
+		return true;
+	return false;
+}
+
+int main()
+{
+	std::string regular_expression;
+	std::string word;
+
+	std::cin >> regular_expression;
+	std::cin >> word;
+
+	for (unsigned int i = 0; i < word.length() - 1; i++)
+	for (unsigned int j = i; j < word.length(); j++)
+		is_substr[word.substr(i, j - i + 1)] = true;
+
+	try
+	{
+		unsigned int len = 0;
+		if (check(word, regular_expression, len))
+		{
+			if (len == word.length())
+			std::cout << "YES" << std::endl;
+			else
+			std::cout << "NO" << std::endl;
+			return 0;
+		}
+	}
+	catch (const std::exception& ex)
+	{
+		std::cout << ex.what() << std::endl;
+		return 0;
+	}
+	std::cout << "NO" << std::endl;
+	
+	return 0;
+}
