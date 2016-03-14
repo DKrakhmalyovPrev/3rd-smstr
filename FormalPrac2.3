@@ -165,8 +165,12 @@ int main()
 
 	for (unsigned int i = 0; i < word.length() - 1; i++)
 	for (unsigned int j = i; j < word.length(); j++)
-		is_substr[word.substr(i, j - i + 1)] = true;
-
+	{
+		std::string sub = "";
+		for (int q = i; q < j+1; q++)
+			sub += word[q];
+		is_substr[sub] = true;
+	}
 	try
 	{
 		unsigned int len = 0;
